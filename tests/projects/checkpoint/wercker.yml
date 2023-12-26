@@ -1,0 +1,22 @@
+build:
+  box:
+    id: alpine
+    cmd: /bin/sh
+  steps:
+    - script:
+        name: check that we have not already checkpointed
+        code: |
+          if [ -e "/foo" ]; then
+            return false
+          fi
+    - script:
+        checkpoint: foo
+        name: touch a file
+        code: touch /foo
+    - script:
+        name: check that we have the file we touched
+        code: |
+          if [ ! -e "/foo" ]; then
+            return false
+          fi
+

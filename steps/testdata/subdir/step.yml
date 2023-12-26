@@ -1,0 +1,11 @@
+name: CreateTarBall_01
+version: 1.0.0
+summary: Please fill in a short summary
+readme: ""
+tags:
+- sample_tag
+properties:
+- name: sample_name
+  type: string
+  required: false
+  default: foofoo

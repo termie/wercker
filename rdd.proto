@@ -1,0 +1,70 @@
+//This proto file is used to generate client for Remote Docker Daemon service and should always have
+//contents same ad https://github.com/wercker/rdd/blob/master/rdd.proto
+syntax = "proto3";
+
+package rdd;
+
+option go_package = "rddpb";
+
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+service Rdd {
+  rpc Provision(RDDProvisionRequest) returns (RDDProvisionResponse) {}
+  rpc GetStatus(RDDStatusRequest) returns (RDDStatusResponse) {}
+  rpc Deprovision(RDDDeprovisionRequest) returns (RDDDeprovisionResponse){}
+  rpc Action(ActionRequest) returns (ActionResponse){}
+}
+
+message RDDProvisionRequest {
+  string runID = 1;  
+}
+message RDDProvisionResponse {
+  string id = 1;
+}
+
+message RDDStatusRequest{
+  string id = 1;
+}
+
+enum DaemonState {
+  // requested means the provisioning of the specified remote docker daemon has been requested but has not started
+  requested = 0;
+  // provisioning means the provisioning of the specified remote docker daemon is in progress
+  provisioning = 1;
+  // provisioned means the specified remote docker daemon has been provisioned
+  provisioned = 2;
+  // deprovisioning means the specified remote docker daemon is being deprovisioned
+  deprovisioning = 3;
+  // error means that the specified remote docker daemon could not be provisioned
+  error = 4;
+  // deprovisioned means the specified remote docker daemon is deprovisioned
+  deprovisioned = 5;
+}
+
+message RDDStatusResponse{
+  DaemonState state = 1;
+  string runID = 2;  
+  google.protobuf.Timestamp creationDate = 3;
+  google.protobuf.Timestamp updateDate = 4;
+  string URL = 5;
+}
+
+message RDDDeprovisionRequest{
+  string id = 1;
+}
+message RDDDeprovisionResponse{
+}
+
+message ActionRequest {
+}
+
+message ActionResponse {
+  bool success = 1;
+}
+
+message Resource {
+  string kind = 1;
+}
+
+

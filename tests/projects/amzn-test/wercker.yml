@@ -1,0 +1,18 @@
+box:
+  id: alpine
+  cmd: /bin/sh
+  aws-access-key: $AWS_ACCESS_KEY_ID
+  aws-secret-key: $AWS_SECRET_ACCESS_KEY
+  aws-region: us-east-1
+  aws-registry-id: $AWS_REGISTRY_ID
+build:
+  steps:
+    - script:
+        code: |
+          echo 'hi'
+    - internal/docker-push:
+        aws-access-key: $AWS_ACCESS_KEY_ID
+        aws-secret-key: $AWS_SECRET_ACCESS_KEY
+        aws-region: us-east-1
+        aws-registry-id: $AWS_REGISTRY_ID
+        repository: test-faiq

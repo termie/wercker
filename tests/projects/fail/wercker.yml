@@ -1,0 +1,18 @@
+box: ubuntu
+# Build definition
+build:
+  # The steps that will be executed on build
+  steps:
+    - script:
+        name: "i am a display name"
+        code: |-
+          exit 1
+    - script:
+        name: "i should never run"
+        code: |-
+          # echo "i am the message for a fail" > $WERCKER_REPORT_MESSAGE_FILE
+          echo "i should never run"
+  after-steps:
+    - script:
+        code: |-
+          echo "lala la"

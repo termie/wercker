@@ -1,0 +1,19 @@
+build:
+  box: golang
+  steps:
+    - script:
+        name: Run tests
+        code: go test ./...     
+    - internal/docker-build:
+        image-name: docker-build-image-name-1
+        build-args: "foo=val1 bar=val2"
+        labels: "Label1=value1 'Three word key'=value2 Label3='Three word value'"
+        extra-hosts: "somehost:192.168.0.1 anotherhost:192.168.0.2"
+        no-cache: true # ensures RUN steps in Dockerfile are always run
+
+build-and-squash:
+  box: golang
+  steps:
+    - internal/docker-build:
+        image-name: docker-build-image-name-2
+        squash: true

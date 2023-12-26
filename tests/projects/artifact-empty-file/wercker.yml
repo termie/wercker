@@ -1,0 +1,10 @@
+box:
+  id: alpine
+  cmd: /bin/sh
+build:
+  steps:
+    - script:
+        code: |
+          dd if=/dev/zero of=$WERCKER_SOURCE_DIR/testfile  bs=1M  count=1500
+          touch $WERCKER_OUTPUT_DIR/empty
+

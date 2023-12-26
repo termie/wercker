@@ -1,0 +1,37 @@
+# Design Doc: Inter-project Services
+
+## Overview
+
+Allow a user to refer to builds from other projects they have access to as
+services for a project.
+
+## General Use Case
+
+Given a Front, an API, and a DB service, allow a user to reference the last
+successful build, possibly in a specific branch, of the API project when
+building the Front project, without having to push containers to hubs, etc.
+
+
+## Details
+
+### Syntax
+
+Front's wercker.yml: 
+```
+build:
+  services:
+    - id: wercker:mies/api?branch=master
+      cmd: /pipeline/source/app --db redis://$REDIS_HOST_PORT
+
+```
+
+### Implementation
+
+Using the wercker api, lookup the matching build for the described service,
+pull it from s3 and load it into docker, then launch it as a service.
+
+### Concerns
+
+Because they are just saved builds, we don't know the commands, envs and such
+that the user may have used if they had pushed it, so we'll need them to
+supply it for the service running portion.

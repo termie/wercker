@@ -1,0 +1,36 @@
+# Design Doc: Wercker as API Client
+
+## Overview
+
+Using go-wercker-api, implement a variety of the commands previously available
+in the python wercker cli (https://github.com/wercker/wercker-cli).
+
+## Details
+
+A bunch of these seem like they should be relatively easy:
+ - status: show status of latest build
+ - builds: show recent builds with links
+ - queue: show queued builds with links
+ - link: link to current application on app.wercker
+
+Some seem a little more difficult:
+ - create: make a new app based on current repo, seems like our wizard has
+   more steps now making this more tricky
+ - deploy: we already have a deploy command, and the old one seems to be about
+   deploying a completed build on the website
+
+Some already exist (but should possibly be re-implemented using api):
+ - login
+ - logout
+ - update
+
+Some could be added:
+ - env add/rm: add and remove environment variables to different environments
+ - wait: wait for the latest / a specific build to complete and return the
+   status (probably a polling operation for now)
+
+Some probably are obsolete:
+ - all the targets stuff
+ - apps: is not really project specific, maybe not that interesting?
+
+

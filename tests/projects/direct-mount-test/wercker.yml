@@ -1,0 +1,19 @@
+test-direct-mount-normal:
+  box:
+    id: busybox
+    cmd: /bin/sh
+  steps:
+    - script:
+        name: test --direct-mount
+        code: |
+            echo "normal" > testfile-normal
+test-direct-mount-rdd:
+  box:
+    id: busybox
+    cmd: /bin/sh
+  docker: true
+  steps:
+    - script:
+        name: test --direct-mount with a pipeline with a rmeote docker daemon
+        code: |
+            echo "rdd" > testfile-rdd            

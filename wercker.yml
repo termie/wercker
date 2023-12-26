@@ -1,0 +1,321 @@
+box: golang:1.10
+command-timeout: 30
+no-response-timeout: 15
+
+workflows:
+  - name: build-and-test
+    pipelines:
+      - name: build
+      - name: integration-tests
+        requires:
+          - build
+
+build:
+  base-path: /go/src/github.com/wercker/wercker
+  steps:
+    - install-packages:
+        checkpoint: pkgs
+        packages: openssh-client pkg-config libsystemd-dev
+
+    - script:
+        name: install govendor
+        code: go get -u github.com/kardianos/govendor
+    
+    - script:
+        name: install dependencies
+        code: govendor sync
+
+    - script:
+        name: go vet
+        code: govendor vet +local
+
+    # - golint:
+    #     exclude: vendor
+
+    - script:
+        name: go test
+        code: govendor test -v +local
+
+    - script:
+        name: clear out the build binaries
+        code: rm -rf $GOPATH/pkg
+
+    - script:
+        name: compile linux_amd64
+        code: |
+            export CGO_ENABLED=0
+            GOOS=linux GOARCH=amd64 go build \
+            -ldflags="-X github.com/wercker/wercker/util.GitCommit=$WERCKER_GIT_COMMIT -X github.com/wercker/wercker/util.PatchVersion=$(( ($(date +%s) - $(date --date=20150101 +%s) )/(60*60*24) )) -X github.com/wercker/wercker/util.Compiled=$(date +%s)" \
+              -o "$WERCKER_OUTPUT_DIR/artifacts/latest/linux_amd64/sentcli"
+
+            cp -r $WERCKER_OUTPUT_DIR/artifacts/latest/* $WERCKER_REPORT_ARTIFACTS_DIR
+
+    - script:
+        name: compile linux_386
+        code: |
+            export CGO_ENABLED=0
+            GOOS=linux GOARCH=386 go build \
+            -ldflags="-X github.com/wercker/wercker/util.GitCommit=$WERCKER_GIT_COMMIT -X github.com/wercker/wercker/util.PatchVersion=$(( ($(date +%s) - $(date --date=20150101 +%s) )/(60*60*24) )) -X github.com/wercker/wercker/util.Compiled=$(date +%s)" \
+              -o "$WERCKER_OUTPUT_DIR/artifacts/latest/linux_386/sentcli"
+
+            cp -r $WERCKER_OUTPUT_DIR/artifacts/latest/* $WERCKER_REPORT_ARTIFACTS_DIR
+
+    - script:
+        name: compile darwin_amd64
+        code: |
+            export CGO_ENABLED=0
+            GOOS=darwin GOARCH=amd64 go build \
+            -ldflags="-X github.com/wercker/wercker/util.GitCommit=$WERCKER_GIT_COMMIT -X github.com/wercker/wercker/util.PatchVersion=$(( ($(date +%s) - $(date --date=20150101 +%s) )/(60*60*24) )) -X github.com/wercker/wercker/util.Compiled=$(date +%s)" \
+              -o "$WERCKER_OUTPUT_DIR/artifacts/latest/darwin_amd64/sentcli"
+
+            cp -r $WERCKER_OUTPUT_DIR/artifacts/latest/* $WERCKER_REPORT_ARTIFACTS_DIR
+
+    - script:
+        name: wercker version
+        code: |
+          $WERCKER_OUTPUT_DIR/artifacts/latest/linux_amd64/sentcli version --no-update-check
+          $WERCKER_OUTPUT_DIR/artifacts/latest/linux_amd64/sentcli --version > "$WERCKER_REPORT_MESSAGE_FILE"
+
+    # generate SHA's for all binaries
+    - script:
+        name: generate SHAs
+        code: |
+            cd $WERCKER_OUTPUT_DIR
+            for f in $(find . -type f -name sentcli); do
+            cd $WERCKER_OUTPUT_DIR/$(dirname "$f")
+            sha256sum sentcli > SHA256SUMS
+            echo "$f: $(cat SHA256SUMS | awk '{print $1}')"
+            done
+            cd $WERCKER_OUTPUT_DIR
+
+    - script:
+        name: prepare
+        code: cp -r scripts $WERCKER_OUTPUT_DIR
+
+    - script:
+        name: Copy source code for use by integration-tests pipeline
+        code: |
+            cp -r /go $WERCKER_OUTPUT_DIR
+
+# This pipeline runs the Wercker integration tests in test-all.sh
+integration-tests:
+  box: docker:dind
+  docker: true
+  steps:
+    - script:
+        name: Copy and test the wercker executable
+        code: |
+            export GOPATH=$WERCKER_SOURCE_DIR/go
+            cp -p $WERCKER_SOURCE_DIR/artifacts/latest/linux_amd64/sentcli $GOPATH/src/github.com/wercker/wercker/wercker
+            $GOPATH/src/github.com/wercker/wercker/wercker --version            
+
+    - script:
+        name: Start the docker daemon
+        code: |
+            # use a different socket than /var/run/docker.sock in case the outer daemon is already using it 
+            dockerd -H unix:///var/run/docker2.sock --storage-driver=overlay &
+            echo Information about the main daemon
+            echo DOCKER_HOST=$DOCKER_HOST
+            docker version
+            docker ps
+            docker info
+            echo Information about the new daemon
+            export DOCKER_HOST=unix:///var/run/docker2.sock
+            echo DOCKER_HOST=$DOCKER_HOST
+            docker version
+            docker ps    
+            docker info   
+    - script:
+        name: install curl (needed by integration tests)
+        code: apk add curl
+
+    - script:
+        name: Integration tests
+        code: |
+            # Unset WERCKER_DEPLOY_ID (which is set when these tests are run in wercker)
+            # since this would override the RunID used by pipelines started by these tests
+            export WERCKER_DEPLOY_ID=
+
+            cd $GOPATH/src/github.com/wercker/wercker
+            sh ./test-all.sh $INTEGRATION_TESTS_TO_RUN
+        
+    - script:
+        name: Create dummy file in WERCKER_OUTPUT_DIR to prevent it storing the source directory at the end of the pipeline
+        code: |
+            touch $WERCKER_OUTPUT_DIR/dummy                      
+
+deploy:
+  box: ubuntu
+  steps:
+    - script:
+        name: update certs
+        code: |
+            sudo apt-get update -y
+            sudo apt-get install ca-certificates -y
+
+    - script:
+        name: prepare
+        code: |
+            echo $WERCKER_GIT_COMMIT > ./artifacts/HEAD
+            cp -r ./artifacts/latest ./artifacts/$WERCKER_GIT_COMMIT
+
+    - s3sync:
+        source-dir: "./artifacts"
+        delete-removed: false
+        bucket-url: $AWS_BUCKET_URL/$WERCKER_GIT_BRANCH/
+        key-id: $AWS_ACCESS_KEY_ID
+        key-secret: $AWS_SECRET_ACCESS_KEY
+
+#
+
+run-tests:
+  box:
+    id: golang:1.7
+    volumes: $CODE_PATH /var/run/docker.sock
+  steps:
+      - script:
+          code: |
+              unset WERCKER_BUILD_ID
+              cd $CODE_PATH
+              ./test-all.sh
+
+release-stable:
+  steps:
+    - install-packages:
+        packages: jshon
+
+    - script:
+        name: version
+        code: |
+            export WERCKER_VERSION=$(./artifacts/latest/linux_amd64/sentcli --version | awk '{print $3}')
+            ./artifacts/latest/linux_amd64/sentcli version --json > ./artifacts/latest/version.json
+            echo "Releasing wercker stable v$WERCKER_VERSION" > $WERCKER_REPORT_MESSAGE_FILE
+            echo "Releasing wercker stable v$WERCKER_VERSION"
+
+    - script:
+        name: rename sentcli to wercker
+        code: |
+            find . -type f -name "sentcli" -exec bash -c 'mv "${0}" ${0/%sentcli/wercker}' {} \;
+            find . -type f -name SHA256SUMS -exec sed -i 's/sentcli/wercker/g' {} +
+
+    # Upload the binaries to our own s3 buckets
+    - s3sync:
+        name: Upload to latest
+        source-dir: "./artifacts/latest"
+        delete-removed: false
+        bucket-url: $DOWNLOADS_BUCKET_URL/stable/
+        key-id: $AWS_ACCESS_KEY_ID
+        key-secret: $AWS_SECRET_ACCESS_KEY
+
+    - s3sync:
+        name: Upload to versions
+        source-dir: "./artifacts/latest"
+        delete-removed: false
+        bucket-url: $DOWNLOADS_BUCKET_URL/versions/$WERCKER_VERSION/
+        key-id: $AWS_ACCESS_KEY_ID
+        key-secret: $AWS_SECRET_ACCESS_KEY
+
+    # Create release on GitHub and add binaries
+    - script:
+        name: generate release notes
+        code: |
+          export RELEASE_NOTES=$(jshon -s "$(./scripts/create-release-notes.sh)" | sed 's/.$//; s/^.//')
+          echo $RELEASE_NOTES
+
+    - github-create-release:
+        token: $GITHUB_TOKEN
+        tag: $WERCKER_VERSION
+        body: $RELEASE_NOTES
+
+    - github-upload-asset:
+        token: $GITHUB_TOKEN
+        file: ./artifacts/latest/linux_amd64/wercker
+        filename: wercker_linux_amd64
+        content-type: application/octet-stream
+
+    - github-upload-asset:
+        token: $GITHUB_TOKEN
+        file: ./artifacts/latest/darwin_amd64/wercker
+        filename: wercker_darwin_amd64
+        content-type: application/octet-stream
+
+    # Signal wercker/homebrew
+    - script:
+        name: Trigger homebrew release
+        code: |
+          export DARWIN_SHA256=$(awk '{print $1}' "./artifacts/latest/darwin_amd64/SHA256SUMS")
+          curl \
+            -X POST \
+            -H "Authorization: Bearer $WERCKER_TOKEN" \
+            -H "Content-Type: application/json" \
+            --data "{ \"message\": \"Release stable $WERCKER_VERSION\", \"pipelineId\": \"$HOMEBREW_PIPELINE_ID\", \"envVars\": [{ \"key\": \"CHANNEL\", \"value\": \"stable\" },{ \"key\": \"VERSION\", \"value\": \"$WERCKER_VERSION\" },{ \"key\": \"SHA256\", \"value\": \"$DARWIN_SHA256\" }] }" \
+            https://app.wercker.com/api/v3/runs
+
+release-beta:
+  steps:
+    - script:
+        name: version
+        code: |
+            export WERCKER_VERSION="$(./artifacts/latest/linux_amd64/sentcli --version | awk '{print $3}')-beta"
+            ./artifacts/latest/linux_amd64/sentcli version --json > ./artifacts/latest/version.json
+            echo "Releasing wercker beta v$WERCKER_VERSION" > $WERCKER_REPORT_MESSAGE_FILE
+            echo "Releasing wercker beta v$WERCKER_VERSION"
+
+    - script:
+        name: rename sentcli to wercker
+        code: |
+            find . -type f -name "sentcli" -exec bash -c 'mv "${0}" ${0/%sentcli/wercker}' {} \;
+            find . -type f -name SHA256SUMS -exec sed -i 's/sentcli/wercker/g' {} +
+
+    # Upload the binaries to our own s3 buckets
+    - s3sync:
+        source-dir: "./artifacts/latest"
+        delete-removed: false
+        bucket-url: $DOWNLOADS_BUCKET_URL/beta/
+        key-id: $AWS_ACCESS_KEY_ID
+        key-secret: $AWS_SECRET_ACCESS_KEY
+
+    - s3sync:
+        source-dir: "./artifacts/latest"
+        delete-removed: false
+        bucket-url: $DOWNLOADS_BUCKET_URL/versions/$WERCKER_VERSION/
+        key-id: $AWS_ACCESS_KEY_ID
+        key-secret: $AWS_SECRET_ACCESS_KEY
+
+    # Signal wercker/homebrew
+    - script:
+        name: Trigger homebrew release
+        code: |
+          export DARWIN_SHA256=$(awk '{print $1}' "./artifacts/latest/darwin_amd64/SHA256SUMS")
+          curl \
+            -X POST \
+            -H "Authorization: Bearer $WERCKER_TOKEN" \
+            -H "Content-Type: application/json" \
+            --data "{ \"message\": \"Release beta $WERCKER_VERSION\",  \"pipelineId\": \"$HOMEBREW_PIPELINE_ID\", \"envVars\": [{ \"key\": \"CHANNEL\", \"value\": \"beta\" },{ \"key\": \"VERSION\", \"value\": \"$WERCKER_VERSION\" },{ \"key\": \"SHA256\", \"value\": \"$DARWIN_SHA256\" }] }" \
+            https://app.wercker.com/api/v3/runs
+
+canary:
+  steps:
+    - script:
+        name: prepare
+        code: |
+            echo $WERCKER_GIT_COMMIT > ./artifacts/HEAD
+            cp -r ./artifacts/latest ./artifacts/$WERCKER_GIT_COMMIT
+
+    - s3sync:
+        source-dir: "./artifacts"
+        delete-removed: false
+        bucket-url: $AWS_BUCKET_URL/canary-$WERCKER_GIT_BRANCH/
+        key-id: $AWS_ACCESS_KEY_ID
+        key-secret: $AWS_SECRET_ACCESS_KEY
+
+    - script:
+        name: Create canary deploy
+        code: |
+          data="{\"sentcliBranch\": \"canary-$WERCKER_GIT_BRANCH\", \"sentcliCommit\": \"$WERCKER_GIT_COMMIT\", \"users\": [ \"$CANARY_USERS\" ], \"percentage\": $CANARY_PERCENTAGE, \"total\": $CANARY_TOTAL, \"fastFailThreshold\": $CANARY_FAST_FAIL}"
+          echo $data
+          curl -X POST --data "$data" "$CANARY_ENDPOINT"
+          if [ $? -ne 0 ]; then
+            exit 1
+          fi
+

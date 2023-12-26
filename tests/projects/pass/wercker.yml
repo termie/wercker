@@ -1,0 +1,50 @@
+box: ubuntu
+command-timeout: 60
+no-response-timeout: 60
+# Build definition
+services:
+    - nginx
+build:
+  # The steps that will be executed on build
+  steps:
+    - script:
+        code: |
+            COUNTER=0
+            until [  $COUNTER -gt 100 ]; do
+              echo -e -n "$COUNTER%\r"
+              sleep 0.01
+              let COUNTER+=1
+            done
+            echo
+    - script:
+        name: make a message
+        code: |-
+            echo "i am a message" > $WERCKER_REPORT_MESSAGE_FILE
+    - script:
+        code: |
+            nc -z `echo ${NGINX_PORT#*://} | sed 's/:/ /g'`
+    - shellcheck
+  after-steps:
+    - script:
+        name: my little afterstep
+        code: |-
+            echo "I am so happy my after-step ran!"
+deploy:
+  steps:
+    - script:
+        code: |
+            COUNTER=0
+            until [  $COUNTER -gt 99 ]; do
+              echo -e -n "$COUNTER%\r"
+              sleep 0.01
+              let COUNTER+=1
+            done
+  production:
+    - script:
+        code: |
+            echo this is production!
+  after-steps:
+    - script:
+        name: my little afterstep
+        code: |-
+            echo "I am so happy my after-step ran!"

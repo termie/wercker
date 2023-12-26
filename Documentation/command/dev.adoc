@@ -1,0 +1,143 @@
+# dev
+
+NAME
+----
+dev - develop and run a local project
+
+USAGE
+-----
+command dev [command options] [arguments...]
+
+OPTIONS
+-------
+
+--working-dir::
+  Path where we store working files.
+  Default;;
+    ./.wercker
+--build-id::
+  The build id (deprecated).
+--deploy-id::
+  The deploy id (deprecated).
+--run-id::
+  The run id.
+--deploy-target::
+  The deploy target name.
+--application-id::
+  The application id.
+--application-name::
+  The application name.
+--application-owner-name::
+  The application owner name.
+--application-started-by-name::
+  The name of the user who started the application.
+--pipeline::
+  Alternate pipeline name to execute.
+--docker-host::
+  Docker api endpoint.
+--docker-tls-verify::
+  Docker api tls verify.
+  Default;;
+    0
+--docker-cert-path::
+  Docker api cert path.
+--docker-dns::
+  Docker DNS server.
+--docker-local::
+  Don't interact with remote repositories
+--checkpoint::
+  Skip to the next step after a recent build checkpoint.
+--direct-mount::
+  Mount our binds read-write to the pipeline path.
+--expose-ports::
+  Enable ports from wercker.yml beeing exposed to the host system.
+--publish::
+  [Deprecated] Use: --expose-ports. - Publish a port from the main container, same format as docker --publish.
+--attach-on-error::
+  Attach shell to container if a step fails.
+--enable-volumes::
+  Mount local files and directories as volumes to your wercker container, specified in your wercker.yml.
+--enable-dev-steps::
+  
+  Enable internal dev steps.
+  This enables:
+  - internal/watch
+  
+--git-domain::
+  Git domain.
+--git-owner::
+  Git owner.
+--git-repository::
+  Git repository.
+--git-branch::
+  Git branch.
+--git-commit::
+  Git commit.
+--commit::
+  Commit the build result locally.
+--tag::
+  Tag for this build.
+--message::
+  Message for this build.
+--artifacts::
+  Store artifacts.
+--no-remove::
+  Don't remove the containers.
+--store-s3::
+  Store artifacts and containers on s3.
+   This requires access to aws credentials, pulled from any of the usual places
+   (~/.aws/config, AWS_SECRET_ACCESS_KEY, etc), or from the --aws-secret-key and
+   --aws-access-key flags. It will upload to a bucket defined by --s3-bucket in
+   the region named by --aws-region
+--aws-secret-key::
+  Secret access key. Used for artifact storage.
+--aws-access-key::
+  Access key id. Used for artifact storage.
+--s3-bucket::
+  Bucket for artifact storage.
+  Default;;
+    wercker-development
+--aws-region::
+  AWS region to use for artifact storage.
+  Default;;
+    us-east-1
+--ignore-file::
+  File with file patterns to ignore when copying files.
+  Default;;
+    .werckerignore
+--source-dir::
+  Source path relative to checkout root.
+--no-response-timeout::
+  Timeout if no script output is received in this many minutes.
+  Default;;
+    5.00
+--command-timeout::
+  Timeout if command does not complete in this many minutes.
+  Default;;
+    25.00
+--wercker-yml::
+  Specify a specific yaml file.
+--mnt-root::
+  Directory on the guest where volumes are mounted.
+  Default;;
+    /mnt
+--guest-root::
+  Directory on the guest where work is done.
+  Default;;
+    /pipeline
+--report-root::
+  Directory on the guest where reports will be written.
+  Default;;
+    /report
+--keen-metrics::
+  Report metrics to keen.io.
+--keen-project-write-key::
+  Keen write key.
+--keen-project-id::
+  Keen project id.
+--report::
+  Report logs back to wercker (requires build-id, wercker-host, wercker-token).
+--wercker-host::
+  Wercker host to use for wercker reporter.
+--wercker-token::
+  Wercker token to use for wercker reporter.

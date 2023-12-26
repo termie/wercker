@@ -1,0 +1,18 @@
+box:
+  id: alpine
+  cmd: /bin/sh
+
+services:
+  - name: red1
+    id: redis
+    cmd: redis-server
+  - name: red2
+    id: redis
+    cmd: redis-server
+
+build:
+  steps:
+    - script:
+        code: |
+          env | grep "RED1_NAME" || false
+          env | grep "RED2_NAME" || false

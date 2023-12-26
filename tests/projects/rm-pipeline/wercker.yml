@@ -1,0 +1,9 @@
+box:
+  id: alpine
+  cmd: /bin/sh
+build:
+  steps:
+    - script:
+        name: prune
+        code: rm -rf /pipeline
+

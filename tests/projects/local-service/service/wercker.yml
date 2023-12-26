@@ -1,0 +1,7 @@
+hello:
+  box: node
+  steps:
+    - script:
+        name: start API server
+        code: |
+            echo 'build complete'

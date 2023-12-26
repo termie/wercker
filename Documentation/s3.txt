@@ -1,0 +1,12 @@
+This is a scratch pad to work on the s3 structure so that we can use it to
+find our results without having to look things up in the databases:
+
+
+/s3bucket/$project_id/$build_id/logs/combined.log
+/s3bucket/$project_id/$build_id/logs/*
+/s3bucket/$project_id/$build_id/artifacts/build-final.tar.gz
+/s3bucket/$project_id/$build_id/artifacts/*
+/s3bucket/$project_id/$build_id/reports/*
+
+Includes $project_id so we can clean up entire projects at a time without
+having to do a DB trawl

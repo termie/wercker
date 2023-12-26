@@ -1,0 +1,17 @@
+box:
+  id: gcr.io/cooltime3000/kiddie-pool
+  username: _json_key
+  password: $GCR_JSON
+  registry: gcr.io
+  cmd: /bin/sh
+build:
+  steps:
+    - script:
+      code: |
+        echo "hello world"
+    - internal/docker-push:
+        repository: gcr.io/cooltime3000/kiddie-pool
+        username: _json_key
+        password: $GCR_JSON
+        registry: gcr.io
+        cmd: /bin/sh

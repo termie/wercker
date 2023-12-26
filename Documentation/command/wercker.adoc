@@ -1,0 +1,72 @@
+# wercker
+
+NAME
+----
+wercker - build and deploy from the command line
+
+USAGE
+-----
+  wercker [global options] command [command options] [arguments...]
+
+VERSION
+-------
+1.0.0 (Compiled at: 2016-11-14T13:21:03Z)
+
+AUTHOR
+------
+Team wercker - <pleasemailus@wercker.com>
+
+COMMANDS
+--------
+build, b::
+  build a project
+dev::
+  develop and run a local project
+check-config::
+  check the project's yaml
+deploy, d::
+  deploy a project
+detect, de::
+  detect the type of project
+login, l::
+  log into wercker
+logout::
+  logout from wercker
+pull, p::
+  pull <build id>
+version, v::
+  print versions
+doc::
+  Generate usage documentation
+help, h::
+  Shows a list of commands or help for one command
+
+
+GLOBAL OPTIONS
+--------------
+--environment::
+  Specify additional environment variables in a file.
+  Default;;
+    ENVIRONMENT
+--verbose::
+  Print more information.
+--no-colors::
+  Wercker output will not use colors (does not apply to step output).
+--debug::
+  Print additional debug information.
+--wercker-endpoint::
+  Deprecated.
+--base-url::
+  Base url for the wercker app.
+  Default;;
+    https://app.wercker.com
+--auth-token::
+  Authentication token to use.
+--auth-token-store::
+  Where to store the token after a login.
+  Default;;
+    ~/.wercker/token
+--help, -h::
+  show help
+--version, -v::
+  print the version

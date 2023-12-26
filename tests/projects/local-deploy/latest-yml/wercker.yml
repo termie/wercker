@@ -1,0 +1,8 @@
+box:
+  id: alpine
+  cmd: /bin/sh
+deploy:
+  steps:
+    - script:
+        code: |
+          echo "fail" && return 1

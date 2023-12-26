@@ -1,0 +1,22 @@
+build:
+  box: golang
+  steps:
+    - internal/docker-build:
+        image-name: docker-push-image-name-1
+    - internal/docker-run:
+        image: docker-push-image-name-1
+        name: myTestContainer
+    - script:
+        name: Test Container 
+        code: |
+            if curlOutput=`curl -s myTestContainer:5001`; then
+                if [ "$curlOutput" == "Hello World!" ]; then
+                    echo "Test passed: container gave expected response"
+                else
+                    echo "Test failed: container gave unexpected response: " $curlOutput
+                    exit 1
+                fi
+            else
+                echo "Test failed: container did not respond"
+                exit 1
+            fi

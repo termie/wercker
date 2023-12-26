@@ -1,0 +1,94 @@
+test-alpine-manual:
+  box:
+    id: alpine
+    cmd: /bin/sh -c "if [ -e /bin/bash ]; then /bin/bash; else /bin/sh; fi"
+  steps:
+    - script:
+        code: |
+          [ $0 == "/bin/sh" ] && echo "running sh" || exit 1
+    - script:
+        name: first fail
+        code: |
+          echo "first fail"
+          false
+    - script:
+        name: second fail
+        code: |
+          echo "second fail"
+          false
+
+
+test-ubuntu-manual:
+  box:
+    id: ubuntu
+    cmd: /bin/sh -c "if [ -e /bin/bash ]; then /bin/bash; else /bin/sh; fi"
+  steps:
+    - script:
+        code: |
+          [ $0 == "/bin/bash" ] && echo "running bash" || exit 1
+    - script:
+        name: first fail
+        code: |
+          echo "first fail"
+          false
+    - script:
+        name: second fail
+        code: |
+          echo "second fail"
+          false
+
+
+test-alpine:
+  box: alpine
+  steps:
+    - script:
+        code: |
+          [ $0 == "/bin/sh" ] && echo "running sh" || exit 1
+
+test-busybox:
+  box: busybox
+  steps:
+    - script:
+        code: |
+          [ $0 == "/bin/sh" ] && echo "running sh" || exit 1
+
+test-ubuntu:
+  box: ubuntu
+  steps:
+    - script:
+        code: |
+          [ $0 == "/bin/bash" ] && echo "running bash" || exit 1
+
+test-alpine-fail:
+  box: alpine
+  steps:
+    - script:
+        code: |
+          [ $0 == "/bin/sh" ] && echo "running sh" || exit 1
+    - script:
+        name: first fail
+        code: |
+          echo "first fail"
+          false
+    - script:
+        name: second fail
+        code: |
+          echo "second fail"
+          false
+
+test-ubuntu-fail:
+  box: ubuntu
+  steps:
+    - script:
+        code: |
+          [ $0 == "/bin/bash" ] && echo "running bash" || exit 1
+    - script:
+        name: first fail
+        code: |
+          echo "first fail"
+          false
+    - script:
+        name: second fail
+        code: |
+          echo "second fail"
+          false

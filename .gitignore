@@ -1,0 +1,7 @@
+wercker
+.wercker
+.werckertests
+.DS_STORE
+
+/vendor/**
+!/vendor/vendor.json

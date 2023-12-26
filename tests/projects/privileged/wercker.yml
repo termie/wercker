@@ -1,0 +1,37 @@
+privileged-mode-docker-false:
+  box:
+    id: busybox
+    cmd: /bin/sh
+  steps:
+    - script:
+        name: test  
+        code: |
+            # verify that the pipeline container is NOT running in privileged mode
+            # https://stackoverflow.com/questions/32144575/how-to-know-if-a-docker-container-is-running-in-privileged-mode
+            set +e
+            ip link add dummy0 type dummy >/dev/null
+            if [[ $? -eq 0 ]]; then
+                echo Unexpectedly able to create link: we must be in privileged mode
+                # clean the dummy0 link
+                ip link delete dummy0 >/dev/null
+                # fail
+                exit 1
+            fi
+privileged-mode-docker-true:
+  box:
+    id: busybox
+    cmd: /bin/sh
+  docker: true
+  steps:
+    - script:
+        name: test  
+        code: |
+            # verify that the pipeline container is running in privileged mode
+            # https://stackoverflow.com/questions/32144575/how-to-know-if-a-docker-container-is-running-in-privileged-mode
+            set +e
+            ip link add dummy0 type dummy >/dev/null
+            if [[ $? -ne 0 ]]; then
+                echo Unexpectedly unable to create link: we must not be in privileged mode
+                # fail
+                exit 1
+            fi       

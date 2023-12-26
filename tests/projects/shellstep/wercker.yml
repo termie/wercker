@@ -1,0 +1,9 @@
+box:
+  id: alpine
+  cmd: /bin/sh
+
+build:
+  steps:
+    - internal/shell:
+        cmd: /bin/sh
+        code: exit 0

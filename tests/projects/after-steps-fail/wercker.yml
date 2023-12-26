@@ -1,0 +1,34 @@
+# ensure after-steps get run on failure
+#
+box:
+  id: alpine
+  cmd: /bin/sh
+
+build_fail:
+  steps:
+    - script:
+        code: false
+  after-steps:
+    - script:
+        name: test
+        code: |
+          if [ "$WERCKER_RESULT" == "passed" ]; then
+            echo "should not have passed"
+            false
+          fi
+
+
+
+build_true:
+  steps:
+    - script:
+        code: true
+  after-steps:
+    - script:
+        name: test
+        code: |
+          if [ "$WERCKER_RESULT" != "passed" ]; then
+            echo "should have passed"
+            false
+          fi
+

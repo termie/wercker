@@ -1,0 +1,60 @@
+# Design Doc: Nested Services
+
+## Overview
+
+Allow services to build, run and link to other services defined locally.
+
+## General Use Case
+
+Given three services, Front, API, and DB, where Front and API are both wercker
+projects, and Front depends on API and API depends on DB, allow for rapid
+co-developemnt of Front and API while allowing both projects to remain
+separate.
+
+## Details
+
+
+### Syntax
+Project Front has a wercker.yml like:
+```
+# front wercker.yml
+dev:
+  services:
+    - id: file://../api#dev
+
+
+  steps:
+    - script:
+        code: |
+            do_something_with $API_HOST
+```
+
+And API has a wercker.yml like:
+```
+# api wercker.yml
+dev:
+  services:
+    - redis
+  steps:
+    - internal/watch:
+        code: |
+          start_some_server
+```
+
+### Implementation
+
+When running into the above syntax in development mode, start a dev pipeline
+for the nested service (API) by referencing its directory and yaml file, leave
+the build running, and then link it to the main box (Front).
+
+### Concerns
+
+This will likely require making sure that there aren't any globals being passed
+around in wercker. At quick glance there don't appear to be many, but at least
+logging needs to be considered.
+
+Second, the internal/watch step drops you into a terminal-like output, after
+which it possibly listens for file changes and reloads. The output will need
+to be out of band or in some other way clearly different from the main output.
+Possibly a similar behavior to tailing two files would be sufficient (default
+is to put little headers and chunk the output slightly).

@@ -1,0 +1,19 @@
+# version
+
+NAME
+----
+version - print versions
+
+USAGE
+-----
+command version [command options] [arguments...]
+
+OPTIONS
+-------
+
+--json::
+  Output version information as JSON
+--beta::
+  Checks for the latest beta version
+--no-update-check::
+  Do not check for update

@@ -1,0 +1,10 @@
+build:
+  box: golang
+  steps:
+    - internal/docker-build:
+        image-name: docker-push-image-name-1  
+    - internal/docker-push: 
+        image-name: docker-push-image-name-1
+        repository: myrepo2
+        tag: docker-push-image-tag2 
+

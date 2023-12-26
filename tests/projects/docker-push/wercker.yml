@@ -1,0 +1,19 @@
+build:
+  box: golang
+  steps:
+    - script:
+        name: Build
+        code: go build -o app
+    - script:
+        name: Test
+        code: go test ./...     
+    - internal/docker-push: # this test must be run with --docker-local so it doesn't actually push to a remote registry
+        entrypoint: /pipeline/source/app
+        username: someuser
+        password: somepassword
+        repository: my.registry.com/someuser/test-docker-push
+        tag: latest      
+        env: "foo=val1 bar='Three word value'"
+        labels: "Label1=value1 'Three word key'=value2 Label3='Three word value'"
+
+

@@ -1,0 +1,14 @@
+build:
+  box:
+    id: alpine
+    cmd: /bin/sh
+  steps:
+    - script:
+        code: |
+          echo "foo1" > $WERCKER_OUTPUT_DIR/foo1
+    - internal/docker-scratch-push:
+        username: $DOCKER_USER
+        password: $DOCKER_PASSWORD
+        registry: https://quay.io
+        tag: uniqueTagFromTest
+        repository: quay.io/wercker/scratch-n-push

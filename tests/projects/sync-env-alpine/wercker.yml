@@ -1,0 +1,16 @@
+build:
+  box: alpine:3.8
+  steps:
+     - script:
+        name: Add multi line SSH_KEY as environment var
+        code: |
+         apk update
+         apk add --no-cache openssh-keygen
+         ssh-keygen -t rsa -f ~/.ssh/id_rsa -q -P ""
+         export SSH_KEY=`cat ~/.ssh/id_rsa`
+         echo -e $SSH_KEY
+     - internal/docker-push:
+        repository: $REPO
+        username: anyuser
+        password: anypassword
+        tags: anytag

@@ -1,0 +1,16 @@
+source-dir: src/
+build:
+  box:
+    id: busybox
+    cmd: /bin/sh
+  steps:
+    - script:
+        code: |
+          if [ ! -e "silly-thing-in-src" ]; then
+                echo "silly-thing-in-src should be here"
+                exit 1
+            fi
+            if [ -e "silly-thing-not-in-src" ]; then
+                echo "silly-thing-not-in-src shouldn't be here"
+                exit 1
+            fi

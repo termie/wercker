@@ -1,0 +1,16 @@
+box:
+  id: alpine
+  cmd: /bin/sh
+
+build:
+  steps:
+    - script:
+        name: check that the links outside our source reference inside the container
+        code: |
+          ls ./etc | grep "alpine-release" || false
+
+    - script:
+        name: check that the links inside our source reference correctly
+        code: |
+          grep "/bin/sh" subdir/wercker.yml || false
+

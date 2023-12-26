@@ -1,0 +1,194 @@
+box: alpine
+
+build:
+  steps:
+    - script:
+      name: echoz
+      code: echo "Hello build" > hello.txt
+
+echoa:
+  steps:
+    - script:
+        name: readhello
+        code: cat hello.txt
+
+    - script:
+        name: echoa
+        code: echo 'AA' > forward.txt
+
+readone:
+  steps:
+    - script:
+        name: read forward.txt
+        code: cat forward.txt
+
+echob:
+  steps:
+    - script:
+        name: readhello
+        code: cat hello.txt
+
+    - script:
+        name: echob
+        code: echo 'BBB' > forward.txt
+
+readfile:
+  steps:
+    - script:
+        name: read both forward.txt
+        code: cat echoa/forward.txt && cat echob/forward.txt
+
+workflows:
+  - name: seq
+    pipelines:
+      - name: mybuild
+        pipelineName: build
+      - name: echoa
+        requires:
+          - mybuild
+      - name: readone
+        requires:
+          - echoa
+
+  - name: fanin
+    pipelines:
+      - name: build
+      - name: echoa
+        requires:
+          - build
+      - name: echob
+        requires:
+          - build
+      - name: readfile
+        requires:
+          - echoa
+          - echob
+
+  - name: fanin2
+    pipelines:
+      - name: build
+      - name: echoa
+        requires:
+          - build
+      - name: echob
+        requires:
+          - build
+      - name: readfile
+        requires:
+          - echoa
+          - echob
+      - name: readfile2
+        pipelineName: readfile
+        requires:
+          - readfile
+
+  - name: faninOne
+    pipelines:
+      - name: build
+      - name: echoa
+        requires:
+          - build
+      - name: echob
+        requires:
+          - build
+      - name: readone
+        artifactPipeline: echob
+        requires:
+          - echoa
+          - echob
+
+  - name: fanout1
+    pipelines:
+      - name: build
+      - name: echoa
+        requires:
+          - build
+      - name: echob
+        requires:
+          - build
+          - readfile2
+      - name: readfile
+        requires:
+          - echoa
+      - name: readfile2
+        pipelineName: readfile
+        requires:
+          - readfile
+
+  - name: circular1
+    pipelines:
+      - name: build
+      - name: echoa
+        requires:
+          - build
+          - echob
+      - name: echob
+        requires:
+          - echoa
+
+  - name: circular2
+    pipelines:
+      - name: build
+      - name: echoa
+        requires:
+          - build
+          - echoa
+
+  - name: circular3
+    pipelines:
+      - name: build
+      - name: echoa
+        requires:
+          - build
+      - name: echob
+        requires:
+          - build
+          - readfile
+      - name: readfile
+        requires:
+          - echoa
+          - echob
+      - name: readfile2
+        pipelineName: readfile
+        requires:
+          - readfile
+
+  - name: circular4
+    pipelines:
+      - name: build
+      - name: echoa
+        requires:
+          - build
+      - name: echob
+        requires:
+          - build
+          - readfile2
+      - name: readfile
+        requires:
+          - echoa
+          - echob
+      - name: readfile2
+        pipelineName: readfile
+        requires:
+          - readfile
+
+  - name: nonUnique
+    pipelines:
+      - name: build
+      - name: build
+
+  - name: doNotExist
+    pipelines:
+      - name: missingbuild
+
+  - name: missingRequired
+    pipelines:
+      - name: build
+      - name: echoa
+        requires:
+          - missingbuild
+
+  - name: multipleRoots
+    pipelines:
+      - name: build
+      - name: echoa

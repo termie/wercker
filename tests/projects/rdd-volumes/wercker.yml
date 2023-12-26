@@ -1,0 +1,59 @@
+rdd-bind-mounts: 
+  # Test the use of bind mounts with a RDD
+  box: alpine
+  docker: true
+  steps:
+    - script:
+        name: Install docker
+        code: apk --no-cache add docker           
+    - script:
+        name: Start a container with /tmp mounted and create a file
+        code: |
+          # Start a container with the host's /tmp directory mounted as /foo
+          # Within that container create a file in /foo
+          docker run --entrypoint sh -i -v /tmp:/foo -e FILENAMETOCREATE=/foo/$ID alpine < script1.sh
+    - script:
+        name: Start a second container with /tmp mounted and verify that it can see that file
+        code: |
+          # Start a container with the host's /tmp directory mounted as /foo
+          # Within that container test to see whether the file we created in the other container exists
+          docker run --entrypoint sh -i -v /tmp:/foo -e FILENAMETOTEST=/foo/$ID alpine < script2.sh
+test-rdd-volumes:
+  # Test the use of volumes with a RDD
+  box: alpine
+  docker: true
+  steps:
+    - script:
+        name: Install docker
+        code: apk --no-cache add docker           
+    - script:
+        name: Create a volume
+        code: |
+          export VOLUME_NAME=vol-$ID
+          docker volume create $VOLUME_NAME
+    - script:
+        name: Create a file locally and use a temporary container to copy it to the volume
+        code: |
+          export FILE_NAME=test-rdd-volumes-$ID
+          export MOUNT_DIR=/$ID
+          touch $FILE_NAME
+          # create a temporary container with the volume mounted which we will use to perform the copy
+          export CONTAINER1_NAME=temp-test-rdd-volumes-1-$ID
+          echo docker create --mount source=$VOLUME_NAME,target=$MOUNT_DIR --name $CONTAINER1_NAME alpine
+          docker create --mount source=$VOLUME_NAME,target=$MOUNT_DIR --name $CONTAINER1_NAME alpine
+
+          echo docker cp $FILE_NAME $CONTAINER1_NAME:$MOUNT_DIR
+          docker cp $FILE_NAME $CONTAINER1_NAME:$MOUNT_DIR
+          # delete the temporary container
+          docker rm $CONTAINER1_NAME
+    - script:
+        name: Start a second container with the volume mounted and verify that it can see that file
+        code: |
+          # Start a container with the volume mounted as /foo
+          # Within that container test to see whether the file we copied to that volume exists
+          export CONTAINER2_NAME=temp-test-rdd-volumes-2-$BUILDID
+          docker run --rm --entrypoint sh -i -v $VOLUME_NAME:/foo -e FILENAMETOTEST=/foo/$FILE_NAME alpine < script2.sh          
+    - script:
+        name: Remove the volume
+        code: |
+          docker volume rm vol-$ID  

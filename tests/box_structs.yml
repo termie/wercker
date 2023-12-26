@@ -1,0 +1,55 @@
+box:
+  id: structs_box
+services:
+  - id: structs_service
+build:
+  box: strings_build
+deploy:
+  box: strings_deploy
+
+pipeline:
+  box:
+    id: blue
+    username: $DOCKER_USERNAME
+  steps:
+    - string-step
+    - script:
+        code: done right
+    - script:
+      code: done wrong
+  alternate-deploy:
+    - alternate-string-step
+    - script:
+        code: also done right
+
+amzn:
+  box:
+    id: node
+    aws-region: "us-east-1"
+    aws-secret-key: "lalala"
+    aws-access-key: "reallysecret"
+    aws-registry-id: 666420666
+
+docker-v2:
+  box:
+    id: node
+    username: "superuser"
+    password: "supersecure"
+
+docker:
+  box:
+    id: node
+    username: "superuser"
+    password: "supersecure"
+    registry : "https://index.docker.io/v1"
+
+azure:
+  box:
+    id: node
+    azure-client-id: "someclientid"
+    azure-client-secret: "itsasecret"
+    azure-subscription-id: "subscriptionid"
+    azure-tenant-id: "imatenant"
+    azure-resource-group: "coolresource"
+    azure-registry-name: "registy"
+    azure-login-server: "wercker.azurecr.io"

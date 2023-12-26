@@ -1,0 +1,4 @@
+match
+!nomatch
+exclude-all/
+exclude-txt/*.txt

@@ -1,0 +1,16 @@
+# Design Doc: Caching
+
+## Overview
+
+On a per-project basis we should provide the user with a small scratch area to
+be used by steps to cache information they may care about.
+
+Wercker's participation in this will be to interact with a local cache directory and this behavior will be always on and not interact with any remote resources.
+
+## Implementation
+
+Wercker will mirror the the local cache-dir into the container and when the build finishes successfully will copy it back out. This behavior will be always on.
+
+External tools (in our case Grappler) will be in charge of downloading and
+uploading the contents of this local directory as a tarball and expanding it
+locally.

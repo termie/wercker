@@ -1,0 +1,14 @@
+box:
+  id: faiq/test
+  cmd: /bin/sh
+  username: $DOCKER_USERNAME
+  password: $DOCKER_PASSWORD
+build:
+  steps:
+    - script:
+        code: |
+          echo 'hi'
+    - internal/docker-push:
+        username: $DOCKER_USERNAME
+        password: $DOCKER_PASSWORD
+        repository: faiq/test

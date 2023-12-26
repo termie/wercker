@@ -1,0 +1,16 @@
+box:
+  id: faiq/test-faiq
+  cmd: /bin/sh
+  registry: https://registry-1.docker.io
+  username: $DOCKER_USERNAME
+  password: $DOCKER_PASSWORD
+build:
+  steps:
+    - script:
+        code: |
+          echo 'hi'
+    - internal/docker-push:
+      username: $DOCKER_USERNAME
+      password: $DOCKER_PASSWORD
+      repository: faiq/test-faiq
+      registry: https://registry-1.docker.io

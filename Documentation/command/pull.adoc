@@ -1,0 +1,43 @@
+# pull
+
+NAME
+----
+pull - pull <build id>
+
+USAGE
+-----
+command pull [command options] [arguments...]
+
+DESCRIPTION
+-----------
+download a Docker repository, and load it into Docker
+
+OPTIONS
+-------
+
+--docker-host::
+  Docker api endpoint.
+--docker-tls-verify::
+  Docker api tls verify.
+  Default;;
+    0
+--docker-cert-path::
+  Docker api cert path.
+--docker-dns::
+  Docker DNS server.
+--docker-local::
+  Don't interact with remote repositories
+--checkpoint::
+  Skip to the next step after a recent build checkpoint.
+--branch::
+  Filter on this branch.
+--result::
+  Filter on this result (passed or failed).
+--output::
+  Path to repository.
+  Default;;
+    ./repository.tar
+--load::
+  Load the container into docker after downloading.
+-f, --force::
+  Override output if it already exists.

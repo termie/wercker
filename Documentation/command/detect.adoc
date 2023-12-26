@@ -1,0 +1,8 @@
+# detect
+
+NAME
+----
+detect - detect the type of project
+
+USAGE
+-----

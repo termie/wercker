@@ -1,0 +1,63 @@
+build:
+  box: alpine
+  docker: true
+  steps: 
+    - script:
+        name: Install docker
+        code: apk --no-cache add docker    
+    - script:
+        name: Install Curl
+        code: apk --no-cache add curl         
+    - script:
+        name: Explore the docker daemon 
+        code: |
+          echo DOCKER_NETWORK_NAME=$DOCKER_NETWORK_NAME
+          echo DOCKER_HOST=$DOCKER_HOST
+          echo TAG=$TAG
+          echo Running docker version
+          docker version
+          echo running docker ps
+          docker ps
+          echo running docker images
+          docker images
+          echo listing the docker networks
+          docker network list
+    - script:
+        name: native docker build 
+        code: |
+          docker build -t $TAG .
+          echo running docker images
+          docker images
+    - script:
+        name: start the newly-created image using docker run 
+        code: |
+          docker run --rm -d -p 5000:5000 --name $CONTAINER_NAME --network=$DOCKER_NETWORK_NAME $TAG
+          echo running docker ps
+          docker ps
+    - script: 
+        name: Wait for container to start 
+        code: | 
+          until $(curl --output /dev/null --silent --head --fail http://$CONTAINER_NAME:5000); do printf '.'; sleep 5; done           
+    - script: 
+        name: Test the container that we started using docker-run
+        code: |
+            if curlOutput=`curl -s $CONTAINER_NAME:5000`; then 
+                export expected="Hello World!!"
+                if [ "$curlOutput" == "$expected" ]; then
+                    echo "Test passed: container gave expected response: " $expected
+                else
+                    echo "Test failed: container gave unexpected response: " $curlOutput
+                    echo "The expected response was: " $expected
+                    exit 1
+                fi   
+            else 
+                echo "Test failed: container did not respond"
+                exit 1 
+            fi      
+  after-steps:                  
+    - script:
+        name: kill the container using docker kill
+        code: |
+          docker kill $CONTAINER_NAME
+          echo running docker ps
+          docker ps

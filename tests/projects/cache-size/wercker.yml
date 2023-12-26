@@ -1,0 +1,9 @@
+box:
+  id: alpine
+  cmd: /bin/sh
+build:
+  steps:
+    - script:
+        code: |
+          dd if=/dev/zero of=/pipeline/cache/testfile  bs=1M  count=1500
+

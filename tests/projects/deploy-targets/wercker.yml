@@ -1,0 +1,11 @@
+box:
+  id: alpine
+  cmd: /bin/sh
+
+deploy:
+  steps:
+    - script:
+        code: echo "fail" && exit 1
+  test:
+    - script:
+        code: echo "hello world"

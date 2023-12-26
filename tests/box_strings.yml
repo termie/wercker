@@ -1,0 +1,8 @@
+box: strings_box
+services:
+  - strings_service
+build:
+  box: strings_build
+deploy:
+  box: strings_deploy
+

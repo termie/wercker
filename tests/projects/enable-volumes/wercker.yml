@@ -1,0 +1,39 @@
+test-enable-volumes-normal:
+  box:
+    id: busybox
+    cmd: /bin/sh
+    volumes: $BOX_VOL_PATH:/foo
+    env:
+      SOURCE_PATH: $BOX_VOL_PATH
+  services:
+    - name: busybox
+      env:
+        SOURCE_PATH: $SVC_VOL_PATH   
+      id: busybox
+      volumes: $SVC_VOL_PATH:/bar
+      cmd: /bin/sh -c "echo 'Unicorn' > /bar/testfile-svc-normal; while true; do sleep 1; done"
+  steps:
+    - script:
+        name: test --enable-volumes
+        code: |
+            echo "Wombat" > /foo/testfile-box-normal
+test-enable-volumes-rdd:
+  box:
+    id: busybox
+    cmd: /bin/sh
+    volumes: $BOX_VOL_PATH:/foo
+    env:
+      SOURCE_PATH: $BOX_VOL_PATH
+  services:
+    - name: busybox
+      env:
+        SOURCE_PATH: $SVC_VOL_PATH   
+      id: busybox
+      volumes: $SVC_VOL_PATH:/bar
+      cmd: /bin/sh -c "echo 'Giraffe' > /bar/testfile-svc-rdd; while true; do sleep 1; done"
+  steps:
+    - script:
+        name: test --enable-volumes
+        code: |
+            echo "Antelope" > /foo/testfile-box-rdd        
+         

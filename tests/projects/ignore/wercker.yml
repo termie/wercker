@@ -1,0 +1,28 @@
+ignore-file: .werckerignore
+
+build:
+  box:
+    id: alpine
+    cmd: /bin/sh
+  steps:
+    - script:
+        code: |
+          absent() {
+            if [ -e "$1" ]; then
+              echo "$1 shouldn't be here"
+              exit 1
+            fi
+          }
+
+          present() {
+            if [ ! -e "$1" ]; then
+              echo "$1 should be here"
+              exit 1
+            fi
+          }
+
+          absent match
+          present nomatch
+          absent exclude-all/
+          absent exclude-txt/file.txt
+          present exclude-txt/file.png
